@@ -1,110 +1,157 @@
 import csv
 import mysql.connector
+from mysql.connector.errors import IntegrityError
 
-mydb = mysql.connector.connect(
-  host="localhost",
-  user="root",
-  passwd="School2009"
-)
 
-print(mydb)
+def registration():
+   try:
 
-mycursor = mydb.cursor()
+        login = input("    Enter login: ")
+        password = input("    Enter password: ")
 
-mycursor.execute("CREATE DATABASE IF NOT EXISTS db1")
-mycursor.execute("use db1")
+        first_name = input("    Enter ur first name: ")
+        last_name = input("    Enter ur lastname: ")
 
-moove = input("    sing up / sing in / search: ")
-
-if moove == "sing up":
-
-    login = input("    Enter login: ")
-    password = input("    Enter password: ")
-
-    first_name = input("    Enter ur first name: ")
-    last_name = input("    Enter ur lastname: ")
-
-    status = input("    Enter ur status (student / teacher): ")
-
-    mycursor.execute("""    
+        status = input("    Enter ur status (student / teacher): ")
+        
+        mycursor.execute("""    
         create table if not exists users(
         id int primary key auto_increment,
-        login varchar(20) not null,
-        password varchar(20),
-        first_name varchar(20),
-        last_name varchar(20),
-        constraint uc_user unique(login),
-        status varchar(15)
-    );
-    """)
-
-    mycursor.execute("""
-    create table if not exists students(
-        chifer VARCHAR(16),
-        first_name VARCHAR(20) REFERENCES users(first_name),
-        last_name VARCHAR(20) REFERENCES users(last_name),
-        login VARCHAR(20) REFERENCES users(login),
-        password VARCHAR(20) REFERENCES users(password)
-    );
-    """)
-
-    mycursor.execute("""
-    create table if not exists teachers(
-        first_name VARCHAR(20) REFERENCES users(first_name),
-        last_name VARCHAR(20) REFERENCES users(last_name),
-        login VARCHAR(20) REFERENCES users(login),
-        password VARCHAR(20) REFERENCES users(password)
-    );
-    """
-    )
-
-    mycursor.execute("""
-        insert into users(login, password, first_name, last_name, status)
-        values('%s', '%s', '%s', '%s', '%s');
-    """
-    % (login, password, first_name, last_name, status)
-    )
-
-    mydb.commit()
-
-    if status == "student":
-
-
-        chifer = input("Enter your chifer: ")
-        mycursor.execute(
-            """
-            insert into students(chifer, first_name, last_name, login, password)
-            values('%s', '%s', '%s', '%s', '%s');
-            """
-        % (chifer, first_name, last_name, login, password)
-        )
-
-    else:
-
+            login varchar(20) not null,
+            password varchar(20),
+            first_name varchar(20),
+            last_name varchar(20),
+            constraint uc_user unique(login),
+            status varchar(15)
+        );
+        """)
 
         mycursor.execute("""
-            insert into teachers(first_name, last_name, login, password)
-            values('%s','%s', '%s', '%s');
+        create table if not exists students(
+            chifer VARCHAR(16),
+            first_name VARCHAR(20) REFERENCES users(first_name),
+            last_name VARCHAR(20) REFERENCES users(last_name),
+            login VARCHAR(20) REFERENCES users(login),
+            password VARCHAR(20) REFERENCES users(password)
+        );
+        """)
+
+        mycursor.execute("""
+        create table if not exists teachers(
+            first_name VARCHAR(20) REFERENCES users(first_name),
+            last_name VARCHAR(20) REFERENCES users(last_name),
+            login VARCHAR(20) REFERENCES users(login),
+            password VARCHAR(20) REFERENCES users(password)
+        );
+        """)
+
+        mycursor.execute("""
+            insert into users(login, password, first_name, last_name, status)
+            values('%s', '%s', '%s', '%s', '%s');
         """
-        %(first_name, last_name, login, password)
+        % (login, password, first_name, last_name, status)
         )
 
-    mydb.commit()
+        mydb.commit()
+        if status == "student":
 
-if moove == "search":
+            chifer = input("    Enter your chifer: ")
+            mycursor.execute(
+                """
+                insert into students(chifer, first_name, last_name, login, password)
+                values('%s', '%s', '%s', '%s', '%s');
+                """
+            % (chifer, first_name, last_name, login, password)
+            )
 
-    search = input("What u searching? (id / first_name / last_name / status / login) ")
-    have = input("What u know about ur goal? (id / first_name / last_name / status / login) ")
-    proof = input("Enter ur info about goal: ")
+        else:
+
+            mycursor.execute("""
+                insert into teachers(first_name, last_name, login, password)
+                values('%s','%s', '%s', '%s');
+            """
+            %(first_name, last_name, login, password)
+            )
+            
+            print("\n\nWelcome! c: \n\n")
+            mydb.commit()
+
+   except IntegrityError:
+        print("\n\nIt`s login using, try registration agane!\n\n")
+    
+        trys = 'n'
+        while trys != 'y':
+            retry = input("\n\n1. Try agane\n2. Back to menu\n\n")
+
+            if retry == '1':
+                registration()
+
+            if retry == '2':
+                trys = 'y'
+
+
+def authorization():
+
+    login = input("Login: ")
+    password = input("Password ")
 
     mycursor.execute("""
-        SELECT '%s' FROM users
-        WHERE '%s' = '%s';
+      SELECT password FROM users
+      WHERE login = '%s'
     """
-    %(search, have, proof)
+    %login
     )
 
-# if moove == "sing in":
-#     print("     Authorization       ")
-#     login = input("Login: ")
-#     password = input("Password: ")
+    query = mycursor.fetchall()
+
+    for x in query:
+      if x[0] == password:
+            print("\n\nWelcome!\n\n")
+            break
+      
+      else:
+            print("\n\n\nError! Wrong password or login!\n\n\n")
+            trys = 'n'
+            while trys != 'y':
+                query = input("1. Try agane\n2. Back to main menu\n\n\n")
+                if query == '1':
+                    authorization()
+                if query == '2':
+                    trys = 'y'
+                if query != '1' and query != '2':
+                    print("\n\nError!\n\n")
+
+if __name__ == "__main__":
+
+  # try:
+  #   print("12" +2)
+    
+  # except TypeError as identifier:
+  #   print("ошибка")
+
+
+  mydb = mysql.connector.connect(
+    host="localhost",
+    user="root" ,
+    passwd="School2009"
+  )
+
+  print(mydb)
+
+  mycursor = mydb.cursor()
+
+  mycursor.execute("CREATE DATABASE IF NOT EXISTS db1")
+  mycursor.execute("use db1")
+
+  is_exit = "n"
+  while is_exit != "y":
+    query = input("1. Sing in\n2. Sing up\n3. Exit\n\n\n")
+
+    if query == '3':
+      is_exit = 'y'
+
+    if query == '2':
+      registration()
+
+    if query == '1':
+      authorization()
