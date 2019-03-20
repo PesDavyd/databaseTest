@@ -1,0 +1,110 @@
+import csv
+import mysql.connector
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  passwd="School2009"
+)
+
+print(mydb)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("CREATE DATABASE IF NOT EXISTS db1")
+mycursor.execute("use db1")
+
+moove = input("    sing up / sing in / search: ")
+
+if moove == "sing up":
+
+    login = input("    Enter login: ")
+    password = input("    Enter password: ")
+
+    first_name = input("    Enter ur first name: ")
+    last_name = input("    Enter ur lastname: ")
+
+    status = input("    Enter ur status (student / teacher): ")
+
+    mycursor.execute("""    
+        create table if not exists users(
+        id int primary key auto_increment,
+        login varchar(20) not null,
+        password varchar(20),
+        first_name varchar(20),
+        last_name varchar(20),
+        constraint uc_user unique(login),
+        status varchar(15)
+    );
+    """)
+
+    mycursor.execute("""
+    create table if not exists students(
+        chifer VARCHAR(16),
+        first_name VARCHAR(20) REFERENCES users(first_name),
+        last_name VARCHAR(20) REFERENCES users(last_name),
+        login VARCHAR(20) REFERENCES users(login),
+        password VARCHAR(20) REFERENCES users(password)
+    );
+    """)
+
+    mycursor.execute("""
+    create table if not exists teachers(
+        first_name VARCHAR(20) REFERENCES users(first_name),
+        last_name VARCHAR(20) REFERENCES users(last_name),
+        login VARCHAR(20) REFERENCES users(login),
+        password VARCHAR(20) REFERENCES users(password)
+    );
+    """
+    )
+
+    mycursor.execute("""
+        insert into users(login, password, first_name, last_name, status)
+        values('%s', '%s', '%s', '%s', '%s');
+    """
+    % (login, password, first_name, last_name, status)
+    )
+
+    mydb.commit()
+
+    if status == "student":
+
+
+        chifer = input("Enter your chifer: ")
+        mycursor.execute(
+            """
+            insert into students(chifer, first_name, last_name, login, password)
+            values('%s', '%s', '%s', '%s', '%s');
+            """
+        % (chifer, first_name, last_name, login, password)
+        )
+
+    else:
+
+
+        mycursor.execute("""
+            insert into teachers(first_name, last_name, login, password)
+            values('%s','%s', '%s', '%s');
+        """
+        %(first_name, last_name, login, password)
+        )
+
+    mydb.commit()
+
+if moove == "search":
+
+    search = input("What u searching? (id / first_name / last_name / status / login) ")
+    have = input("What u know about ur goal? (id / first_name / last_name / status / login) ")
+    proof = input("Enter ur info about goal: ")
+
+    mycursor.execute("""
+        SELECT '%s' FROM users
+        WHERE '%s' = '%s';
+    """
+    %(search, have, proof)
+    )
+
+if moove == "sing in":
+    print("     Authorization       ")
+    login = input("Login: ")
+    password = input("Password: ")
