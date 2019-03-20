@@ -104,7 +104,7 @@ if moove == "search":
     %(search, have, proof)
     )
 
-if moove == "sing in":
-    print("     Authorization       ")
-    login = input("Login: ")
-    password = input("Password: ")
+# if moove == "sing in":
+#     print("     Authorization       ")
+#     login = input("Login: ")
+#     password = input("Password: ")
